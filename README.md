@@ -38,7 +38,7 @@ Klaar! Je website is te bereiken via de URL [`localhost`](https://localhost).
 
 ## Applicatie gebruiken
 
-#### Gebruikers kunnen worden toegevoegd in een normale terminal met het volgende commando.
+#### Gebruikers kunnen worden toegevoegd in een normale terminal met het volgende commando, negeer de warning.
 
 ```
 docker exec Mosquitto-TINNES-1 mosquitto_passwd -b /mosquitto/passwd/password_file <username> <password>
