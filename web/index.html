@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>WhatsApp moet oppassen</title>
     <style>
-        /* Add your custom styles here */
         .my-form {
             max-width: 400px;
             margin: 0 auto;
@@ -47,7 +46,7 @@
             background-color: #f1f1f1;
             display: flex;
             flex-direction: column;
-            align-items: flex-start; /* Align messages to the left by default */
+            align-items: flex-start;
         }
 
         .message {
@@ -75,13 +74,13 @@
         #messageInputDiv {
             margin-top: 20px;
             max-width: 600px;
-            margin: 20px auto; /* Center horizontally */
+            margin: 20px auto;
             padding: 10px;
             border-radius: 5px;
             background-color: #f9f9f9;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             display: flex;
-            justify-content: center; /* Center the items horizontally */
+            justify-content: center;
             align-items: center;
         }
 
@@ -109,7 +108,6 @@
     </script>
 </head>
 <body>
-    <!-- LOGIN FORM -->
     <div id="loginDiv" class="my-form">
         <form class="blablabla" onsubmit="return formSubmitFunction()" action="" id="loginForm" method="post">
             <div class="container">
@@ -134,7 +132,6 @@
     </div>
 </body>
 <script>
-    // Your JavaScript code
     ownTopic = "";
     username = "";
 
@@ -170,14 +167,16 @@
             console.log('Connection error: ', err)
             client.end()
             loginForm.reset()
+            // Show div with error message
             document.getElementById('wrongLogin').style.display = '';
         })
         client.on('reconnect', () => {
             console.log('Reconnecting...')
         })
         client.on('connect', () => {
-            // Subscribe
+            // Subscribe to all topics below topic `test`
             client.subscribe('test/#', { qos: 0 })
+            // Hide login form and show message div's
             document.getElementById('loginDiv').style.display = 'none';
             document.getElementById('messageInputDiv').style.display = '';
             document.getElementById('messageContainer').style.display = '';
@@ -185,11 +184,14 @@
         })
 
         client.on('message', (topic, message, packet) => {
+            // Parse the name of the last subtopic, this is the username of the sender of the message
             const subTopics = topic.split("/");
             const lastTopic = subTopics.pop();
             const messageBox = document.createElement("div")
             messageBox.classList.add("message");
             switch (lastTopic) {
+                // 2 Topics are reserves for loggin connecting and disconnecting users. On these action the users will publish a message to these topics with their name.
+                // A different style is applied to the message that are sent by the current user
                 case "connected":
                     if (message.toString() == username) {
                         console.log(`${message.toString()} (you) joined the chat!`)
