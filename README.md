@@ -1,7 +1,7 @@
 # TINNES-1 MQTT Chat App | Opdracht 1
 
 <!-- ![image](https://github.com/wouterbt/RAAST/assets/122525080/1e40cedc-decd-4140-b17d-294f334cf25b) -->
-![image](image.png)
+<img src="https://github.com/ThomasvanEgmond/TINNES-1-Opdracht-1/blob/main/image.png" width="570">
 
 Opdracht 1 voor `Netwerken en Security vervolg` is een MQTT chat app maken. Deze app maakt gebruikt van een centrale  MQTT broker en een webserver voor de front-end, beide moeten draaien in een docker container.
 
