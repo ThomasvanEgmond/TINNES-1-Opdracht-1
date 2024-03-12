@@ -7,7 +7,7 @@ Opdracht 1 voor `Netwerken en Security vervolg` is een MQTT chat app maken. Deze
 
 Echter kwam ik erachter dat in de MQTT broker [`Mosquitto`](https://mosquitto.org/) een ingebouwde webserver zat. Mosquitto serveert op dezelfde poort zowel de MQTT broker als de front-end webpagina.
 
-Vanwege de vermindering in configuratie en installatie werk is dit voor deze simpele applicatie een voordeel. Voor groot schaliger gebruik van een MQTT broker (of een andere back-end) is het handiger om de webpagina apart te laten draaien van de MQTT broker.
+Vanwege de vermindering in configuratie en installatie werk is dit voor deze simpele applicatie een voordeel. Voor groot schaliger gebruik van een MQTT broker (of een andere back-end) is het handiger om de webserver apart te laten draaien van de MQTT broker.
 
 
 ## Installatie
