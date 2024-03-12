@@ -1,0 +1,19 @@
+services:
+  Mosquitto:
+    image: eclipse-mosquitto
+    container_name: "Mosquitto-TINNES-1"
+    volumes:
+      - ./config:/mosquitto/config
+      - ./web:/mosquitto/web
+      - ./passwd:/mosquitto/passwd
+      - ./certs:/mosquitto/certs
+      - ./log:/mosquitto/log
+    ports:
+      - target: 443
+        published: 443
+        protocol: tcp
+        mode: host
+      - target: 443
+        published: 80
+        protocol: tcp
+        mode: host

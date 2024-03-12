@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        /* Add your custom styles here */
+        .my-form {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            font-family: "Bahnschrift";
+        }
+
+        .my-form input[type="text"],
+        .my-form input[type="password"],
+        .my-form button {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-family: "Bahnschrift";
+        }
+
+        .my-form button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .my-form button:hover {
+            background-color: #45a049;
+        }
+
+        #messageContainer {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f1f1f1;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* Align messages to the left by default */
+        }
+
+        .message {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            max-width: 70%;
+            font-family: "Bahnschrift";
+        }
+
+        .they-message {
+            background-color: purple;
+            color: white;
+            align-self: flex-start;
+            align-items: flex-start;
+        }
+
+        .my-message {
+            background-color: #4caf50;
+            color: white;
+            align-self: flex-end;
+            align-items: flex-end;
+        }
+
+        #messageInputDiv {
+            margin-top: 20px;
+            max-width: 600px;
+            margin: 20px auto; /* Center horizontally */
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center; /* Center the items horizontally */
+            align-items: center;
+        }
+
+        #messageInputDiv input[type="text"] {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        #messageInputDiv button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        #messageInputDiv button:hover {
+            background-color: #45a049;
+        }
+    </style>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.3.6/mqtt.min.js" integrity="sha512-7DQZVTk6F8+bPAGxJYTI17fKg3xWIX9xJyXileGVP46JuZXumXYergaMjlagVxm3gt9FX4qpZ+9CEpDMV271yw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    </script>
+</head>
+<body>
+    <!-- LOGIN FORM -->
+    <div id="loginDiv" class="my-form">
+        <form class="blablabla" onsubmit="return formSubmitFunction()" action="" id="loginForm" method="post">
+            <div class="container">
+                <input type="text" placeholder="Enter Username" id="uname" required>
+                <input type="password" placeholder="Enter Password" id="psw" required>
+                <button type="submit">Login</button>
+            </div>
+            <div id="wrongLogin" style="display: none;">
+                Wrong username or password
+            </div>
+        </form>
+    </div>
+    <div id="messageContainer" style="display: none;">
+    </div>
+    <div id="messageInputDiv" style="display: none;">
+        <form onsubmit="if(document.getElementById(`message`).value != ``){sendMsg(document.getElementById(`message`).value)};
+        messageForm.reset();
+        return false" id="messageForm" action="" method="post">
+            <input type="text" id="message" placeholder="Type your message here" />
+            <button type="submit">Send</button>
+        </form>
+    </div>
+</body>
+<script>
+    // Your JavaScript code
+    ownTopic = "";
+    username = "";
+
+    function formSubmitFunction() {
+        connectMQTT();
+        return false;
+    }
+
+    function connectMQTT() {
+        username = `${document.getElementById("uname").value}`;
+        const clientId = 'mqttjs_' + Math.random().toString(16).substr(2, 8)
+        const host = 'wss://localhost:443'
+        const options = {
+            keepalive: 60,
+            clientId: clientId,
+            protocolId: 'MQTT',
+            protocolVersion: 4,
+            clean: true,
+            reconnectPeriod: 1000,
+            connectTimeout: 30 * 1000,
+            username: `${document.getElementById("uname").value}`,
+            password: `${document.getElementById("psw").value}`,
+            will: {
+                topic: `test/disconnected`,
+                payload: username,
+                qos: 0,
+                retain: false
+            },
+        }
+        console.log('Connecting mqtt client')
+        client = mqtt.connect(host, options)
+        client.on('error', (err) => {
+            console.log('Connection error: ', err)
+            client.end()
+            loginForm.reset()
+            document.getElementById('wrongLogin').style.display = '';
+        })
+        client.on('reconnect', () => {
+            console.log('Reconnecting...')
+        })
+        client.on('connect', () => {
+            // Subscribe
+            client.subscribe('test/#', { qos: 0 })
+            document.getElementById('loginDiv').style.display = 'none';
+            document.getElementById('messageInputDiv').style.display = '';
+            document.getElementById('messageContainer').style.display = '';
+            client.publish(`test/connected`, username, { qos: 0, retain: false })
+        })
+
+        client.on('message', (topic, message, packet) => {
+            const subTopics = topic.split("/");
+            const lastTopic = subTopics.pop();
+            const messageBox = document.createElement("div")
+            messageBox.classList.add("message");
+            switch (lastTopic) {
+                case "connected":
+                    if (message.toString() == username) {
+                        console.log(`${message.toString()} (you) joined the chat!`)
+                        messageBox.textContent = `${message.toString()} (you) joined the chat!`
+                        messageBox.classList.add("my-message");
+                    } else {
+                        console.log(`${message.toString()} joined the chat!`)
+                        messageBox.textContent = `${message.toString()} joined the chat!`
+                        messageBox.classList.add("they-message");
+                    }
+                    break;
+                case "disconnected":
+                    console.log(`${message.toString()} disconnected from the chat!`)
+                    messageBox.textContent = `${message.toString()} disconnected from the chat!`
+                    messageBox.classList.add("they-message");
+                    break;
+                default:
+                    console.log(`${lastTopic}: ${message.toString()}`)
+                    messageBox.textContent = `${lastTopic}: ${message.toString()}`
+                    if (lastTopic === username) {
+                        messageBox.classList.add("my-message");
+                    } else {
+                        messageBox.classList.add("they-message");
+                    }
+            }
+            document.getElementById("messageContainer").appendChild(messageBox)
+        })
+    }
+
+    function sendMsg(message) {
+        client.publish(`test/${username}`, message, { qos: 0, retain: false })
+    }
+</script>
+</html>
